@@ -7,11 +7,11 @@ function SECTION:new()
 end
 
 local function topSectionStencil()
-	love.graphics.rectangle("fill", 10, 10, Ww - 20, (Wh - 20) * sectionMidpoint - 10, 8)
+	love.graphics.rectangle("fill", 10, 10, Ww - 20, (Wh - 20) * SectionMidpoint - 10, 8)
 end
 
 local function bottomSectionStencil()
-	love.graphics.rectangle("fill", 10, (Wh - 20) * sectionMidpoint + 10, Ww - 20, (Wh - 20) * (1 - sectionMidpoint), 8)
+	love.graphics.rectangle("fill", 10, (Wh - 20) * SectionMidpoint + 10, Ww - 20, (Wh - 20) * (1 - SectionMidpoint), 8)
 end
 
 function SECTION:topSection()
@@ -21,7 +21,7 @@ function SECTION:topSection()
 	World:draw()
 	love.graphics.setStencilTest()
 	love.graphics.setColor(Pal.yellow)
-	love.graphics.rectangle("line", 10, 10, Ww - 20, (Wh - 20) * sectionMidpoint - 10, 8)
+	love.graphics.rectangle("line", 10, 10, Ww - 20, (Wh - 20) * SectionMidpoint - 10, 8)
 	love.graphics.setLineWidth(4)
 end
 
@@ -30,7 +30,7 @@ function SECTION:bottomSection()
 	love.graphics.setStencilTest("greater", 0)
 	love.graphics.setStencilTest()
 	love.graphics.setColor(Pal.green)
-	love.graphics.rectangle("line", 10, (Wh - 20) * sectionMidpoint + 10, Ww - 20, (Wh - 20) * (1 - sectionMidpoint), 8)
+	love.graphics.rectangle("line", 10, (Wh - 20) * SectionMidpoint + 10, Ww - 20, (Wh - 20) * (1 - SectionMidpoint), 8)
 	love.graphics.setLineWidth(4)
 end
 

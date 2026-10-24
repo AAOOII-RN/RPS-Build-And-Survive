@@ -1,7 +1,8 @@
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
-	sectionMidpoint = 0.95
-	interactingSectionMidpoint = false
+	math.randomseed(1792782602 - os.time())
+	SectionMidpoint = 0.95
+	InteractingSectionMidpoint = false
 	Ww, Wh = love.graphics.getDimensions()
 	Ticker = 0
 	Font = love.graphics.setNewFont("assets/fonts/Baloo2-Medium.ttf", 100)
@@ -25,23 +26,26 @@ function love.update(dt)
 	-- Interacting with the section midpoint
 	if
 		(
-			love.mouse.getY() >= (Wh - 20) * sectionMidpoint - 10
-			and love.mouse.getY() <= (Wh - 20) * sectionMidpoint + 10
-		) or interactingSectionMidpoint
+			love.mouse.getY() >= (Wh - 20) * SectionMidpoint - 10
+			and love.mouse.getY() <= (Wh - 20) * SectionMidpoint + 10
+		) or InteractingSectionMidpoint
 	then
 		love.mouse.setCursor(Cursor.sizens)
 		if love.mouse.isDown(1) then
-			sectionMidpoint = love.mouse.getY() / Wh
-			interactingSectionMidpoint = true
+			SectionMidpoint = love.mouse.getY() / Wh
+			InteractingSectionMidpoint = true
 		else
-			interactingSectionMidpoint = false
+			InteractingSectionMidpoint = false
 		end
 	else
 		love.mouse.setCursor(Cursor.arrow)
 	end
 
 	-- Section Midsection limits
-	sectionMidpoint = math.min(math.max(0.05, sectionMidpoint), 0.95)
+	SectionMidpoint = math.min(math.max(0.05, SectionMidpoint), 0.95)
+
+	-- update other files
+	World:update(dt)
 end
 
 function love.draw()
