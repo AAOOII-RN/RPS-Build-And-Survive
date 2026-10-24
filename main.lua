@@ -6,50 +6,38 @@ function love.load()
 	Ww, Wh = love.graphics.getDimensions()
 	Ticker = 0
 	Font = love.graphics.setNewFont("assets/fonts/Baloo2-Medium.ttf", 100)
+
 	-- Modules
 	Pal = require("modules.palette")
 
 	-- Components
 	Section = require("components.two_sections"):new()
 	World = require("components.world"):new()
+	Construct = require("components.construct"):new()
 
-	-- arrays
+	-- collections
 	Cursor = {
 		arrow = love.mouse.getSystemCursor("arrow"),
 		sizens = love.mouse.getSystemCursor("sizens"),
+	}
+	Images = {
+		rock = love.graphics.newImage("assets/img/rock.png"),
+		paper = love.graphics.newImage("assets/img/paper.png"),
+		scissor = love.graphics.newImage("assets/img/scissor.png"),
 	}
 end
 
 function love.update(dt)
 	Ticker = Ticker + dt
 
-	-- Interacting with the section midpoint
-	if
-		(
-			love.mouse.getY() >= (Wh - 20) * SectionMidpoint - 10
-			and love.mouse.getY() <= (Wh - 20) * SectionMidpoint + 10
-		) or InteractingSectionMidpoint
-	then
-		love.mouse.setCursor(Cursor.sizens)
-		if love.mouse.isDown(1) then
-			SectionMidpoint = love.mouse.getY() / Wh
-			InteractingSectionMidpoint = true
-		else
-			InteractingSectionMidpoint = false
-		end
-	else
-		love.mouse.setCursor(Cursor.arrow)
-	end
-
-	-- Section Midsection limits
-	SectionMidpoint = math.min(math.max(0.05, SectionMidpoint), 0.95)
-
 	-- update other files
+	Section:update(dt)
 	World:update(dt)
+	Construct:update(dt)
 end
 
 function love.draw()
-	love.graphics.setBackgroundColor(Pal.bg)
+	love.graphics.setBackgroundColor(Pal.bg1)
 	Section:topSection()
 	Section:bottomSection()
 	love.graphics.setLineWidth(1)
