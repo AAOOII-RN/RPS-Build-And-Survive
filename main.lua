@@ -1,7 +1,7 @@
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	math.randomseed(1792782602 - os.time())
-	SectionMidpoint = 0.95
+	SectionMidpoint = 0.05
 	InteractingSectionMidpoint = false
 	Ww, Wh = love.graphics.getDimensions()
 	Ticker = 0
@@ -30,6 +30,7 @@ end
 function love.update(dt)
 	Ticker = Ticker + dt
 
+	-- modules
 	-- update other files
 	Section:update(dt)
 	World:update(dt)
@@ -38,6 +39,7 @@ end
 
 function love.draw()
 	love.graphics.setBackgroundColor(Pal.bg1)
+	love.graphics.setFont(Font)
 	Section:topSection()
 	Section:bottomSection()
 	love.graphics.setLineWidth(1)
