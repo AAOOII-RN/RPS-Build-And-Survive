@@ -8,6 +8,7 @@ end
 
 function BTNUI:newRect(id, x, y, w, h, sleep)
 	self.buttons[id] = {
+		name = id,
 		type = "Rect",
 		x = x or 0,
 		y = y or 0,
@@ -21,6 +22,7 @@ end
 
 function BTNUI:newCirc(id, x, y, r, sleep)
 	self.buttons[id] = {
+		name = id,
 		type = "Circ",
 		x = x or 0,
 		y = y or 0,
@@ -33,6 +35,7 @@ end
 
 function BTNUI:editBtnRect(id, x, y, w, h, sleep)
 	self.buttons[id] = {
+		name = self.buttons[id].name,
 		type = self.buttons[id].type,
 		x = x or self.buttons[id].x,
 		y = y or self.buttons[id].y,
@@ -46,6 +49,7 @@ end
 
 function BTNUI:editBtnCirc(id, x, y, r, sleep)
 	self.buttons[id] = {
+		name = self.buttons[id].name,
 		type = self.buttons[id].type,
 		x = x or self.buttons[id].x,
 		y = y or self.buttons[id].y,

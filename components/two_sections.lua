@@ -27,7 +27,7 @@ function SECTION:update(dt)
 	end
 
 	-- Section Midsection limits
-	SectionMidpoint = math.min(math.max(0.05, SectionMidpoint), 0.95)
+	SectionMidpoint = math.min(math.max(0.03, SectionMidpoint), 0.97)
 end
 
 local function topSectionStencil()
@@ -36,7 +36,7 @@ local function topSectionStencil()
 		o.margin,
 		o.margin,
 		Ww - o.margin * 2,
-		(Wh - o.margin * 2) * SectionMidpoint - 10,
+		(Wh - o.margin * 2) * SectionMidpoint - o.margin,
 		8
 	)
 end

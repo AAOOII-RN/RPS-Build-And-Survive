@@ -1,7 +1,7 @@
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	math.randomseed(1792782602 - os.time())
-	SectionMidpoint = 0.05
+	SectionMidpoint = 0.03
 	InteractingSectionMidpoint = false
 	Ww, Wh = love.graphics.getDimensions()
 	Ticker = 0
@@ -9,6 +9,7 @@ function love.load()
 
 	-- Modules
 	Pal = require("modules.palette")
+	Btnui = require("modules.btnui"):new()
 
 	-- Components
 	Section = require("components.two_sections"):new()
@@ -27,6 +28,10 @@ function love.load()
 	}
 end
 
+function LERP(a, b, t)
+	return a + t * b
+end
+
 function love.update(dt)
 	Ticker = Ticker + dt
 
@@ -37,10 +42,15 @@ function love.update(dt)
 	Construct:update(dt)
 end
 
+function love.mousepressed(x, y, button)
+	Construct:mousepressed(x, y, button)
+end
+
 function love.draw()
 	love.graphics.setBackgroundColor(Pal.bg1)
 	love.graphics.setFont(Font)
 	Section:topSection()
 	Section:bottomSection()
 	love.graphics.setLineWidth(1)
+	--Btnui:draw()
 end
