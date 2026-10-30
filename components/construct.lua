@@ -10,45 +10,11 @@ function CONSTRUCT:new()
 	-- boid brain settings
 	o.protectiveRange = 75
 	o.seperation = 0.5
-	o.friction = 0.005
+	o.friction = 0.01
 
 	-- {rock, paper, scissor, x, y, vx, vy, type}
-	o.blocks = {
-		{
-			rock = 1,
-			paper = 0,
-			scissor = 0,
-			x = math.random() * Ww,
-			y = math.random() * Wh,
-			vx = (-1 + math.random() * 2) * 1,
-			vy = (-1 + math.random() * 2) * 1,
-			type = "basic",
-			btn = Btnui:newRect("BaseRock", 0, 0, 75, 75, false),
-		},
-		{
-			rock = 0,
-			paper = 1,
-			scissor = 0,
-			x = math.random() * Ww,
-			y = math.random() * Wh,
-			vx = (-1 + math.random() * 2) * 1,
-			vy = (-1 + math.random() * 2) * 1,
-			type = "basic",
-			btn = Btnui:newRect("BasePaper", 0, 0, 75, 75, false),
-		},
-		{
-			rock = 0,
-			paper = 0,
-			scissor = 1,
-			x = math.random() * Ww,
-			y = math.random() * Wh,
-			vx = (-1 + math.random() * 2) * 1,
-			vy = (-1 + math.random() * 2) * 1,
-			type = "basic",
-			btn = Btnui:newRect("BaseScissor", 0, 0, 75, 75, false),
-		},
-	}
-	for i = 1, 0 do
+	o.blocks = {}
+	for i = 1, 10 do
 		local rockTrait = math.random()
 		local paperTrait = math.random()
 		local scissorTrait = math.random()
@@ -61,15 +27,23 @@ function CONSTRUCT:new()
 			y = math.random() * Wh,
 			vx = (-1 + math.random() * 2) * 1,
 			vy = (-1 + math.random() * 2) * 1,
-			type = "basic",
 			btn = Btnui:newRect("Baby" .. i, 0, 0, 75, 75, false),
+			weary = 0,
 		}
-		table.insert(o.blocks, block)
+		o.blocks["Baby_" .. i] = block
 	end
 	return o
 end
 
+function CONSTRUCT:taskbar()
+	love.graphics.setColor(fcv("red", 1))
+	love.graphics.rectangle("fill", 65, Wh - 65 - 75, 75, 75, 10)
+end
+
+function CONSTRUCT:taskbarUpdate(dt, mx, my) end
+
 function CONSTRUCT:update(dt)
+	local mx, my = love.mouse.getPosition()
 	for _, obj in pairs(self.blocks) do
 		-- Update positions
 		obj.x = obj.x + obj.vx * dt
@@ -90,6 +64,12 @@ function CONSTRUCT:update(dt)
 		obj.vx = obj.vx * (1 - self.friction) + close.dx * self.seperation
 		obj.vy = obj.vy * (1 - self.friction) + close.dy * self.seperation
 
+		-- 150 + 53 = Radius + Block's width * 1.414
+		if math.sqrt((10 - obj.x) ^ 2 + (Wh - 10 - obj.y) ^ 2) < 200 + 53 then
+			obj.vx = obj.vx + obj.x - 10
+			obj.vy = obj.vy + obj.y - (Wh - 10)
+		end
+
 		-- Barrier
 		if obj.x - 37.5 <= 0 then
 			obj.vx = obj.vx + 10
@@ -104,36 +84,43 @@ function CONSTRUCT:update(dt)
 			obj.vy = obj.vy - 10
 		end
 	end
+
+	self:taskbarUpdate(dt, mx, my)
 end
 
 function CONSTRUCT:mousepressed(mx, my, button)
-	for i, obj in ipairs(self.blocks) do
+	for id, obj in pairs(self.blocks) do
 		if button == 1 and Btnui:isHovered(obj.btn.name, mx, my) and not self.rightClickCmd then
 			if self.firstChoice == "" then
-				self.firstChoice = obj
-			elseif self.firstChoice.btn.name ~= obj.btn.name and self.firstChoice ~= "" then
+				self.firstChoice = id
+				local choice = self.blocks[self.firstChoice]
+			elseif self.blocks[self.firstChoice].btn.name ~= obj.btn.name and self.firstChoice ~= "" then
 				-- Make inheritance
-				local r = (self.firstChoice.rock * 0.6 + obj.rock * 0.4) / 2 * (0.7 + math.random() * 0.6)
-				local p = (self.firstChoice.paper * 0.6 + obj.paper * 0.4) / 2 * (0.7 + math.random() * 0.6)
-				local s = (self.firstChoice.scissor * 0.6 + obj.scissor * 0.4) / 2 * (0.7 + math.random() * 0.6)
+				local r = (self.blocks[self.firstChoice].rock * 0.6 + obj.rock * 0.4) / 2 * (0.7 + math.random() * 0.6)
+				local p = (self.blocks[self.firstChoice].paper * 0.6 + obj.paper * 0.4)
+					/ 2
+					* (0.7 + math.random() * 0.6)
+				local s = (self.blocks[self.firstChoice].scissor * 0.6 + obj.scissor * 0.4)
+					/ 2
+					* (0.7 + math.random() * 0.6)
 				local sum = r + p + s
 				local baby = {
 					rock = r / sum,
 					paper = p / sum,
 					scissor = s / sum,
-					x = (self.firstChoice.x + obj.x) / 2,
-					y = (self.firstChoice.y + obj.y) / 2,
-					vx = (self.firstChoice.vx + obj.vx) / 2,
-					vy = (self.firstChoice.vy + obj.vy) / 2,
-					type = "basic",
+					x = (self.blocks[self.firstChoice].x + obj.x) / 2 + math.random() * 0.01,
+					y = (self.blocks[self.firstChoice].y + obj.y) / 2 + math.random() * 0.01,
+					vx = (self.blocks[self.firstChoice].vx + obj.vx) / 2,
+					vy = (self.blocks[self.firstChoice].vy + obj.vy) / 2,
 					btn = Btnui:newRect(
 						"baby" .. math.floor(Ticker * 10000),
-						(self.firstChoice.x + obj.x) / 2 - 37.5,
-						(self.firstChoice.y + obj.y) / 2 - 37.5,
+						(self.blocks[self.firstChoice].x + obj.x) / 2 - 37.5,
+						(self.blocks[self.firstChoice].y + obj.y) / 2 - 37.5,
 						75,
 						75,
 						false
 					),
+					weary = (self.blocks[self.firstChoice].weary + obj.weary) / 2 - math.random() * 0.01,
 				}
 				self.blocks[#self.blocks + 1] = baby
 				self.firstChoice = ""
@@ -174,6 +161,19 @@ function CONSTRUCT:draw()
 		end
 	end
 
+	-- first choice outline
+	if self.firstChoice ~= "" then
+		love.graphics.setColor(Pal.red)
+		love.graphics.rectangle(
+			"line",
+			self.blocks[self.firstChoice].x - 45,
+			self.blocks[self.firstChoice].y - 45,
+			90,
+			90,
+			10
+		)
+	end
+
 	-- Blocks
 	for _, obj in pairs(o.blocks) do
 		love.graphics.setColor(1, 1, 1, 1)
@@ -207,23 +207,42 @@ function CONSTRUCT:draw()
 			tribeShow:getWidth() / 2,
 			tribeShow:getHeight() / 2
 		)
+	end
+	self:taskbar()
 
-		-- Block info
+	-- Block info
+	for _, obj in pairs(o.blocks) do
 		local mx, my = love.mouse.getPosition()
+		local leftInfo = mx + 40 + 250 > Ww
 		if self.rightClickCmd and Btnui:isHovered(obj.btn.name, mx, my) then
+			love.graphics.setColor(Pal.bg1)
+			love.graphics.rectangle("fill", leftInfo and mx - 40 - 250 or mx + 40, my, 250, 120, 10)
 			love.graphics.setColor(Pal.fg)
-			love.graphics.print("Rock: " .. string.format("%.4f", obj.rock), mx + 50, my, 0, 0.3)
 			love.graphics.print(
-				"Paper: " .. string.format("%.4f", obj.paper),
-				mx + 50,
+				"Rock: " .. string.format("%.4f", obj.rock) * 100 .. "%",
+				leftInfo and mx - 30 - 250 or mx + 50,
+				my,
+				0,
+				0.3
+			)
+			love.graphics.print(
+				"Paper: " .. string.format("%.4f", obj.paper) * 100 .. "%",
+				leftInfo and mx - 30 - 250 or mx + 50,
 				my + Font:getHeight() * 0.15,
 				0,
 				0.3
 			)
 			love.graphics.print(
-				"Scissor: " .. string.format("%.4f", obj.scissor),
-				mx + 50,
+				"Scissor: " .. string.format("%.4f", obj.scissor) * 100 .. "%",
+				leftInfo and mx - 30 - 250 or mx + 50,
 				my + Font:getHeight() * 0.3,
+				0,
+				0.3
+			)
+			love.graphics.print(
+				"Wearyness: " .. string.format("%.4f", obj.weary) * 100 .. "%",
+				leftInfo and mx - 30 - 250 or mx + 50,
+				my + Font:getHeight() * 0.45,
 				0,
 				0.3
 			)

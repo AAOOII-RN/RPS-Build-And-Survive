@@ -24,8 +24,7 @@ local FCC = {
 
 function fcv(fcc, a)
 	local fcc2 = FCC[fcc]
-	fcc2[4] = a or 1
-	return fcc2
+	return { fcc2[1], fcc2[2], fcc2[3], a or 1 }
 end
 
 function fcvlerp(fcva, fcvb, t)
