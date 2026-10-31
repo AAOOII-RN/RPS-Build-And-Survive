@@ -41,6 +41,10 @@ function WORLD:new()
 	Travel = {
 		x = Ww / 2 - squareX - squareSize / 2,
 		y = Wh / 2 - squareY - squareSize / 2,
+		vx = 0,
+		vy = 0,
+		maxSpeed = 150,
+		friction = 0.05,
 	}
 	setmetatable(o, { __index = self })
 	return o
@@ -48,22 +52,43 @@ end
 
 function WORLD:update(dt)
 	local mx, my = love.mouse.getPosition()
-	if love.keyboard.isDown("up") then
-		Travel.y = Travel.y + dt * 300
-	elseif love.keyboard.isDown("down") then
-		Travel.y = Travel.y - dt * 300
+	if love.keyboard.isDown("w") then
+		Travel.vy = Travel.vy + dt * 100
+	elseif love.keyboard.isDown("s") then
+		Travel.vy = Travel.vy - dt * 100
 	end
-	if love.keyboard.isDown("left") then
-		Travel.x = Travel.x + dt * 300
-	elseif love.keyboard.isDown("right") then
-		Travel.x = Travel.x - dt * 300
+	if love.keyboard.isDown("a") then
+		Travel.vx = Travel.vx + dt * 100
+	elseif love.keyboard.isDown("d") then
+		Travel.vx = Travel.vx - dt * 100
 	end
+	local speed = math.sqrt(Travel.vx * Travel.vx + Travel.vy * Travel.vy)
+	if speed > Travel.maxSpeed then
+		local scale = Travel.maxSpeed / speed
+		Travel.vx = Travel.vx * scale
+		Travel.vy = Travel.vy * scale
+	end
+	Travel.vx = Travel.vx * (1 - Travel.friction)
+	Travel.vy = Travel.vy * (1 - Travel.friction)
+	Travel.x = Travel.x + Travel.vx
+	Travel.y = Travel.y + Travel.vy
 
-	if love.mouse.isDown(1) and not InteractingSectionMidpoint then
+	if
+		love.mouse.isDown(1)
+		and not InteractingSectionMidpoint
+		and my < Wh * SectionMidpoint
+		and Construct.firstChoice ~= ""
+	then
+		local obj = Construct.blocks[Construct.firstChoice]
 		local x = math.floor((mx - Travel.x - 6) / self.cellSize + self.worldSize.w / 2) + 1
 		local y = math.floor((my - Travel.y - 6) / self.cellSize + self.worldSize.h / 2) + 1
+		local total = obj.rock + obj.paper + obj.scissor
 		if x >= 1 and x <= self.worldSize.w and y >= 1 and y <= self.worldSize.h and not self.world[x][y] then
-			self.placedBlocks[x][y] = 2
+			self.placedBlocks[x][y] = {
+				(Pal.red[1] * obj.rock + Pal.yellow[1] * obj.paper + Pal.blue[1] * obj.scissor) / total,
+				(Pal.red[2] * obj.rock + Pal.yellow[2] * obj.paper + Pal.blue[2] * obj.scissor) / total,
+				(Pal.red[3] * obj.rock + Pal.yellow[3] * obj.paper + Pal.blue[3] * obj.scissor) / total,
+			}
 		end
 	end
 end
@@ -101,8 +126,20 @@ function WORLD:draw()
 					4
 				)
 			end
-			if self.world[x][y] == 2 or self.placedBlocks[x][y] == 2 then
+			if self.world[x][y] == 2 then
 				love.graphics.setColor(Pal.yellow)
+				love.graphics.rectangle(
+					"fill",
+					((x - 1) - self.worldSize.w / 2) * self.cellSize + 6 + Travel.x,
+					((y - 1) - self.worldSize.h / 2) * self.cellSize + 6 + Travel.y,
+					self.cellSize - 3,
+					self.cellSize - 3,
+					4
+				)
+			end
+			if self.placedBlocks[x][y] ~= 0 then
+				local pblks = self.placedBlocks[x][y]
+				love.graphics.setColor(pblks[1], pblks[2], pblks[3], 1)
 				love.graphics.rectangle(
 					"fill",
 					((x - 1) - self.worldSize.w / 2) * self.cellSize + 6 + Travel.x,

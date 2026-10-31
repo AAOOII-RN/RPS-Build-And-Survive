@@ -2,6 +2,7 @@ function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	math.randomseed(1792782602 - os.time())
 	SectionMidpoint = 0.97
+	SectionMidpointLerp = SectionMidpoint
 	InteractingSectionMidpoint = false
 	Ww, Wh = love.graphics.getDimensions()
 	Ticker = 0
@@ -40,6 +41,10 @@ function love.update(dt)
 	Section:update(dt)
 	World:update(dt)
 	Construct:update(dt)
+end
+
+function love.wheelmoved(x, y)
+	SectionMidpointLerp = SectionMidpointLerp - y * 0.17
 end
 
 function love.mousepressed(x, y, button)

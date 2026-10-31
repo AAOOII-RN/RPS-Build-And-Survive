@@ -84,16 +84,19 @@ function CONSTRUCT:update(dt)
 			obj.vy = obj.vy - 10
 		end
 	end
-
 	self:taskbarUpdate(dt, mx, my)
 end
 
 function CONSTRUCT:mousepressed(mx, my, button)
 	for id, obj in pairs(self.blocks) do
-		if button == 1 and Btnui:isHovered(obj.btn.name, mx, my) and not self.rightClickCmd then
+		if
+			button == 1
+			and Btnui:isHovered(obj.btn.name, mx, my)
+			and not self.rightClickCmd
+			and obj.y > Wh * SectionMidpoint
+		then
 			if self.firstChoice == "" then
 				self.firstChoice = id
-				local choice = self.blocks[self.firstChoice]
 			elseif self.blocks[self.firstChoice].btn.name ~= obj.btn.name and self.firstChoice ~= "" then
 				-- Make inheritance
 				local r = (self.blocks[self.firstChoice].rock * 0.6 + obj.rock * 0.4) / 2 * (0.7 + math.random() * 0.6)
@@ -120,15 +123,16 @@ function CONSTRUCT:mousepressed(mx, my, button)
 						75,
 						false
 					),
-					weary = (self.blocks[self.firstChoice].weary + obj.weary) / 2 - math.random() * 0.01,
+					weary = math.max((self.blocks[self.firstChoice].weary + obj.weary) / 2 - math.random() * 0.01, 0),
 				}
 				self.blocks[#self.blocks + 1] = baby
 				self.firstChoice = ""
 			end
 		end
+
 		if button == 1 and Btnui:isHovered(obj.btn.name, mx, my) and self.rightClickCmd then
 			Btnui.buttons[obj.btn.name] = nil
-			table.remove(self.blocks, i)
+			self.blocks[id] = nil
 			self.firstChoice = ""
 			self.rightClickCmd = false
 		end
@@ -175,7 +179,7 @@ function CONSTRUCT:draw()
 	end
 
 	-- Blocks
-	for _, obj in pairs(o.blocks) do
+	for _, obj in pairs(self.blocks) do
 		love.graphics.setColor(1, 1, 1, 1)
 		local max = math.max(obj.rock, obj.paper, obj.scissor)
 		local total = obj.rock + obj.paper + obj.scissor
@@ -183,7 +187,7 @@ function CONSTRUCT:draw()
 			(Pal.red[1] * obj.rock + Pal.yellow[1] * obj.paper + Pal.blue[1] * obj.scissor) / total,
 			(Pal.red[2] * obj.rock + Pal.yellow[2] * obj.paper + Pal.blue[2] * obj.scissor) / total,
 			(Pal.red[3] * obj.rock + Pal.yellow[3] * obj.paper + Pal.blue[3] * obj.scissor) / total,
-			1,
+			1 - obj.weary,
 		}
 		love.graphics.setColor(color)
 		love.graphics.rectangle("fill", obj.x - 37.5, obj.y - 37.5, 75, 75, 4)
@@ -218,31 +222,22 @@ function CONSTRUCT:draw()
 			love.graphics.setColor(Pal.bg1)
 			love.graphics.rectangle("fill", leftInfo and mx - 40 - 250 or mx + 40, my, 250, 120, 10)
 			love.graphics.setColor(Pal.fg)
+			Font:setLineHeight(0.5)
 			love.graphics.print(
-				"Rock: " .. string.format("%.4f", obj.rock) * 100 .. "%",
+				"Rock: "
+					.. string.format("%.4f", obj.rock) * 100
+					.. "%\n"
+					.. "Paper: "
+					.. string.format("%.4f", obj.paper) * 100
+					.. "%\n"
+					.. "Scissor: "
+					.. string.format("%.4f", obj.scissor) * 100
+					.. "%\n"
+					.. "Wearyness: "
+					.. string.format("%.4f", obj.weary) * 100
+					.. "%\n",
 				leftInfo and mx - 30 - 250 or mx + 50,
 				my,
-				0,
-				0.3
-			)
-			love.graphics.print(
-				"Paper: " .. string.format("%.4f", obj.paper) * 100 .. "%",
-				leftInfo and mx - 30 - 250 or mx + 50,
-				my + Font:getHeight() * 0.15,
-				0,
-				0.3
-			)
-			love.graphics.print(
-				"Scissor: " .. string.format("%.4f", obj.scissor) * 100 .. "%",
-				leftInfo and mx - 30 - 250 or mx + 50,
-				my + Font:getHeight() * 0.3,
-				0,
-				0.3
-			)
-			love.graphics.print(
-				"Wearyness: " .. string.format("%.4f", obj.weary) * 100 .. "%",
-				leftInfo and mx - 30 - 250 or mx + 50,
-				my + Font:getHeight() * 0.45,
 				0,
 				0.3
 			)

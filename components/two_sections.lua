@@ -17,7 +17,7 @@ function SECTION:update(dt)
 	then
 		love.mouse.setCursor(Cursor.sizens)
 		if love.mouse.isDown(1) then
-			SectionMidpoint = love.mouse.getY() / Wh
+			SectionMidpointLerp = love.mouse.getY() / Wh
 			InteractingSectionMidpoint = true
 		else
 			InteractingSectionMidpoint = false
@@ -26,8 +26,11 @@ function SECTION:update(dt)
 		love.mouse.setCursor(Cursor.arrow)
 	end
 
+	SectionMidpoint = LERP(SectionMidpoint, SectionMidpointLerp, 0.2)
+
 	-- Section Midsection limits
-	SectionMidpoint = math.min(math.max(0.03, SectionMidpoint), 0.97)
+	SectionMidpoint = math.min(math.max(0.015, SectionMidpoint), 0.985)
+	SectionMidpointLerp = math.min(math.max(0.03, SectionMidpointLerp), 0.97)
 end
 
 local function topSectionStencil()
@@ -59,11 +62,12 @@ function SECTION:topSection()
 	World:draw()
 	love.graphics.setStencilTest()
 	love.graphics.setColor(Pal.yellow)
-	love.graphics.rectangle("line", 10, 10, Ww - 20, (Wh - 20) * SectionMidpoint - 10, 8)
 	love.graphics.setLineWidth(4)
+	love.graphics.rectangle("line", 10, 10, Ww - 20, (Wh - 20) * SectionMidpoint - 10, 8)
 end
 
 function SECTION:bottomSection()
+	love.graphics.setLineWidth(4)
 	love.graphics.stencil(bottomSectionStencil, "replace", 1)
 	love.graphics.setStencilTest("greater", 0)
 	Construct:draw()
