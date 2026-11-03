@@ -14,7 +14,7 @@ function CONSTRUCT:new()
 
 	-- {rock, paper, scissor, x, y, vx, vy, type}
 	o.blocks = {}
-	for i = 1, 10 do
+	for i = 1, 100 do
 		local rockTrait = math.random()
 		local paperTrait = math.random()
 		local scissorTrait = math.random()
@@ -29,6 +29,7 @@ function CONSTRUCT:new()
 			vy = (-1 + math.random() * 2) * 1,
 			btn = Btnui:newRect("Baby" .. i, 0, 0, 75, 75, false),
 			weary = 0,
+			wearyfriction = 0.1 + math.random() * 0.6,
 		}
 		o.blocks["Baby_" .. i] = block
 	end
@@ -72,18 +73,25 @@ function CONSTRUCT:update(dt)
 
 		-- Barrier
 		if obj.x - 37.5 <= 0 then
-			obj.vx = obj.vx + 10
+			obj.vx = obj.vx * 0.9 + 50
 		end
 		if obj.y - 37.5 <= 0 then
-			obj.vy = obj.vy + 10
+			obj.vy = obj.vy * 0.9 + 50
 		end
 		if obj.x + 37.5 >= Ww then
-			obj.vx = obj.vx - 10
+			obj.vx = obj.vx * 0.9 - 50
 		end
 		if obj.y + 37.5 >= Wh then
-			obj.vy = obj.vy - 10
+			obj.vy = obj.vy * 0.9 - 50
 		end
 	end
+
+	-- selected block follow cursor
+	if self.firstChoice ~= "" then
+		self.blocks[self.firstChoice].vx = self.blocks[self.firstChoice].vx * 0.9 + mx - self.blocks[self.firstChoice].x
+		self.blocks[self.firstChoice].vy = self.blocks[self.firstChoice].vy * 0.9 + my - self.blocks[self.firstChoice].y
+	end
+
 	self:taskbarUpdate(dt, mx, my)
 end
 
@@ -124,6 +132,13 @@ function CONSTRUCT:mousepressed(mx, my, button)
 						false
 					),
 					weary = math.max((self.blocks[self.firstChoice].weary + obj.weary) / 2 - math.random() * 0.01, 0),
+					wearyfriction = math.min(
+						math.max(
+							1,
+							(self.blocks[self.firstChoice].wearyfriction + obj.wearyfriction) / 2 + math.random() * 0.01
+						),
+						0
+					),
 				}
 				self.blocks[#self.blocks + 1] = baby
 				self.firstChoice = ""
@@ -135,11 +150,10 @@ function CONSTRUCT:mousepressed(mx, my, button)
 			self.blocks[id] = nil
 			self.firstChoice = ""
 			self.rightClickCmd = false
+		elseif button == 2 then
+			self.firstChoice = ""
+			self.rightClickCmd = not self.rightClickCmd
 		end
-	end
-	if button == 2 then
-		self.firstChoice = ""
-		self.rightClickCmd = not self.rightClickCmd
 	end
 end
 
@@ -220,7 +234,7 @@ function CONSTRUCT:draw()
 		local leftInfo = mx + 40 + 250 > Ww
 		if self.rightClickCmd and Btnui:isHovered(obj.btn.name, mx, my) then
 			love.graphics.setColor(Pal.bg1)
-			love.graphics.rectangle("fill", leftInfo and mx - 40 - 250 or mx + 40, my, 250, 120, 10)
+			love.graphics.rectangle("fill", leftInfo and mx - 40 - 250 or mx + 40, my, 250, 150, 10)
 			love.graphics.setColor(Pal.fg)
 			Font:setLineHeight(0.5)
 			love.graphics.print(
@@ -235,6 +249,9 @@ function CONSTRUCT:draw()
 					.. "%\n"
 					.. "Wearyness: "
 					.. string.format("%.4f", obj.weary) * 100
+					.. "%\n"
+					.. "Quality: "
+					.. string.format("%.4f", 1 - obj.wearyfriction / 0.7) * 100
 					.. "%\n",
 				leftInfo and mx - 30 - 250 or mx + 50,
 				my,

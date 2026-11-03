@@ -83,17 +83,37 @@ function WORLD:update(dt)
 		local x = math.floor((mx - Travel.x - 6) / self.cellSize + self.worldSize.w / 2) + 1
 		local y = math.floor((my - Travel.y - 6) / self.cellSize + self.worldSize.h / 2) + 1
 		local total = obj.rock + obj.paper + obj.scissor
-		if x >= 1 and x <= self.worldSize.w and y >= 1 and y <= self.worldSize.h and not self.world[x][y] then
+		if
+			x >= 1 -- is not beyond leftmost border
+			and x <= self.worldSize.w -- is not beyond rightmost border
+			and y >= 1 -- is not beyond topmost border
+			and y <= self.worldSize.h -- is not beyond bottommost border
+			and not self.world[x][y] -- is an empty cell
+			and obj.weary <= 1 -- is not weary
+		then
 			self.placedBlocks[x][y] = {
 				(Pal.red[1] * obj.rock + Pal.yellow[1] * obj.paper + Pal.blue[1] * obj.scissor) / total,
 				(Pal.red[2] * obj.rock + Pal.yellow[2] * obj.paper + Pal.blue[2] * obj.scissor) / total,
 				(Pal.red[3] * obj.rock + Pal.yellow[3] * obj.paper + Pal.blue[3] * obj.scissor) / total,
+				obj.rock,
+				obj.paper,
+				obj.scissor,
+				100,
 			}
 		end
 	end
 end
 
-function WORLD:mousepressed(mx, my, button) end
+function WORLD:mousepressed(mx, my, button)
+	if button == 1 and not InteractingSectionMidpoint and my < Wh * SectionMidpoint and Construct.firstChoice ~= "" then
+		local obj = Construct.blocks[Construct.firstChoice]
+		local x = math.floor((mx - Travel.x - 6) / self.cellSize + self.worldSize.w / 2) + 1
+		local y = math.floor((my - Travel.y - 6) / self.cellSize + self.worldSize.h / 2) + 1
+		if x >= 1 and x <= self.worldSize.w and y >= 1 and y <= self.worldSize.h and not self.world[x][y] then
+			obj.weary = obj.weary + math.random() * 0.01
+		end
+	end
+end
 
 function WORLD:draw()
 	love.graphics.setColor(Pal.bg)
@@ -139,6 +159,7 @@ function WORLD:draw()
 			end
 			if self.placedBlocks[x][y] ~= 0 then
 				local pblks = self.placedBlocks[x][y]
+				local max = math.max(pblks[4], pblks[5], pblks[6])
 				love.graphics.setColor(pblks[1], pblks[2], pblks[3], 1)
 				love.graphics.rectangle(
 					"fill",
@@ -147,6 +168,25 @@ function WORLD:draw()
 					self.cellSize - 3,
 					self.cellSize - 3,
 					4
+				)
+				love.graphics.setColor(1, 1, 1, 1)
+				local tribeShow = Images.rock
+				if pblks[4] - max == 0 then
+					tribeShow = Images.rock
+				elseif pblks[5] - max == 0 then
+					tribeShow = Images.paper
+				elseif pblks[6] - max == 0 then
+					tribeShow = Images.scissor
+				end
+				love.graphics.draw(
+					tribeShow,
+					((x - 1) - self.worldSize.w / 2) * self.cellSize + 6 + self.cellSize / 2 + Travel.x,
+					((y - 1) - self.worldSize.h / 2) * self.cellSize + 6 + self.cellSize / 2 + Travel.y,
+					0,
+					45 / tribeShow:getWidth(),
+					45 / tribeShow:getWidth(),
+					tribeShow:getWidth() / 2,
+					tribeShow:getHeight() / 2
 				)
 			end
 		end
