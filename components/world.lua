@@ -89,7 +89,7 @@ function WORLD:update(dt)
 			and y >= 1 -- is not beyond topmost border
 			and y <= self.worldSize.h -- is not beyond bottommost border
 			and not self.world[x][y] -- is an empty cell
-			and obj.weary <= 1 -- is not weary
+			and obj.weary >= 1 -- is not weary
 		then
 			self.placedBlocks[x][y] = {
 				(Pal.red[1] * obj.rock + Pal.yellow[1] * obj.paper + Pal.blue[1] * obj.scissor) / total,
@@ -110,7 +110,7 @@ function WORLD:mousepressed(mx, my, button)
 		local x = math.floor((mx - Travel.x - 6) / self.cellSize + self.worldSize.w / 2) + 1
 		local y = math.floor((my - Travel.y - 6) / self.cellSize + self.worldSize.h / 2) + 1
 		if x >= 1 and x <= self.worldSize.w and y >= 1 and y <= self.worldSize.h and not self.world[x][y] then
-			obj.weary = obj.weary + math.random() * 0.01
+			obj.weary = obj.weary - 1
 		end
 	end
 end

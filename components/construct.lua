@@ -14,7 +14,41 @@ function CONSTRUCT:new()
 
 	-- {rock, paper, scissor, x, y, vx, vy, type}
 	o.blocks = {}
-	for i = 1, 100 do
+	o.blocks["Rock"] = {
+		rock = 1,
+		paper = 0,
+		scissor = 0,
+		x = math.random() * Ww,
+		y = math.random() * Wh,
+		vx = (-1 + math.random() * 2) * 1,
+		vy = (-1 + math.random() * 2) * 1,
+		btn = Btnui:newRect("Baby" .. 1, 0, 0, 75, 75, false),
+		weary = math.random(8, 99),
+	}
+	o.blocks["Paper"] = {
+		rock = 0,
+		paper = 1,
+		scissor = 0,
+		x = math.random() * Ww,
+		y = math.random() * Wh,
+		vx = (-1 + math.random() * 2) * 1,
+		vy = (-1 + math.random() * 2) * 1,
+		btn = Btnui:newRect("Baby" .. 2, 0, 0, 75, 75, false),
+		weary = math.random(8, 99),
+	}
+	o.blocks["Scissor"] = {
+		rock = 0,
+		paper = 0,
+		scissor = 1,
+		x = math.random() * Ww,
+		y = math.random() * Wh,
+		vx = (-1 + math.random() * 2) * 1,
+		vy = (-1 + math.random() * 2) * 1,
+		btn = Btnui:newRect("Baby" .. 3, 0, 0, 75, 75, false),
+		weary = math.random(8, 99),
+	}
+
+	for i = 1, 0 do
 		local rockTrait = math.random()
 		local paperTrait = math.random()
 		local scissorTrait = math.random()
@@ -28,8 +62,7 @@ function CONSTRUCT:new()
 			vx = (-1 + math.random() * 2) * 1,
 			vy = (-1 + math.random() * 2) * 1,
 			btn = Btnui:newRect("Baby" .. i, 0, 0, 75, 75, false),
-			weary = 0,
-			wearyfriction = 0.1 + math.random() * 0.6,
+			weary = math.random(8, 99),
 		}
 		o.blocks["Baby_" .. i] = block
 	end
@@ -88,7 +121,10 @@ function CONSTRUCT:update(dt)
 
 	-- selected block follow cursor
 	if self.firstChoice ~= "" then
-		self.blocks[self.firstChoice].vx = self.blocks[self.firstChoice].vx * 0.9 + mx - self.blocks[self.firstChoice].x
+		self.blocks[self.firstChoice].vx = self.blocks[self.firstChoice].vx * 0.9
+			+ mx
+			- 80
+			- self.blocks[self.firstChoice].x
 		self.blocks[self.firstChoice].vy = self.blocks[self.firstChoice].vy * 0.9 + my - self.blocks[self.firstChoice].y
 	end
 
@@ -131,14 +167,7 @@ function CONSTRUCT:mousepressed(mx, my, button)
 						75,
 						false
 					),
-					weary = math.max((self.blocks[self.firstChoice].weary + obj.weary) / 2 - math.random() * 0.01, 0),
-					wearyfriction = math.min(
-						math.max(
-							1,
-							(self.blocks[self.firstChoice].wearyfriction + obj.wearyfriction) / 2 + math.random() * 0.01
-						),
-						0
-					),
+					weary = math.max((self.blocks[self.firstChoice].weary + obj.weary) / 2 + math.random() * 2, 0),
 				}
 				self.blocks[#self.blocks + 1] = baby
 				self.firstChoice = ""
@@ -150,10 +179,11 @@ function CONSTRUCT:mousepressed(mx, my, button)
 			self.blocks[id] = nil
 			self.firstChoice = ""
 			self.rightClickCmd = false
-		elseif button == 2 then
-			self.firstChoice = ""
-			self.rightClickCmd = not self.rightClickCmd
 		end
+	end
+	if button == 2 then
+		self.firstChoice = ""
+		self.rightClickCmd = not self.rightClickCmd
 	end
 end
 
@@ -201,7 +231,6 @@ function CONSTRUCT:draw()
 			(Pal.red[1] * obj.rock + Pal.yellow[1] * obj.paper + Pal.blue[1] * obj.scissor) / total,
 			(Pal.red[2] * obj.rock + Pal.yellow[2] * obj.paper + Pal.blue[2] * obj.scissor) / total,
 			(Pal.red[3] * obj.rock + Pal.yellow[3] * obj.paper + Pal.blue[3] * obj.scissor) / total,
-			1 - obj.weary,
 		}
 		love.graphics.setColor(color)
 		love.graphics.rectangle("fill", obj.x - 37.5, obj.y - 37.5, 75, 75, 4)
@@ -248,11 +277,7 @@ function CONSTRUCT:draw()
 					.. string.format("%.4f", obj.scissor) * 100
 					.. "%\n"
 					.. "Wearyness: "
-					.. string.format("%.4f", obj.weary) * 100
-					.. "%\n"
-					.. "Quality: "
-					.. string.format("%.4f", 1 - obj.wearyfriction / 0.7) * 100
-					.. "%\n",
+					.. obj.weary,
 				leftInfo and mx - 30 - 250 or mx + 50,
 				my,
 				0,
